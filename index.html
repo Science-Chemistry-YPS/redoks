@@ -1,0 +1,824 @@
+import React, { useState, useEffect } from 'react';
+import { BookOpen, Beaker, Zap, Calculator, ClipboardList, Menu, X, ArrowRight, CheckCircle, Info, ChevronRight, PlayCircle, RefreshCw, FlaskConical, Atom } from 'lucide-react';
+
+// --- DATA & KONSTANTA ---
+
+const STANDARD_POTENTIALS = {
+  Zn: -0.76,
+  Cu: +0.34,
+  Ag: +0.80,
+  Mg: -2.37,
+  Fe: -0.44,
+  Ni: -0.25
+};
+
+const MENU_ITEMS = [
+  { id: 'redox', label: '1. Konsep Redoks', time: '4 JP', icon: Atom, color: 'from-orange-400 to-pink-500' },
+  { id: 'balancing', label: '2. Penyetaraan Reaksi', time: '6 JP', icon: RefreshCw, color: 'from-blue-400 to-cyan-500' },
+  { id: 'voltaic', label: '3. Sel Volta', time: '6 JP', icon: Zap, color: 'from-yellow-400 to-amber-500' },
+  { id: 'electrolysis', label: '4. Sel Elektrolisis', time: '6 JP', icon: Beaker, color: 'from-purple-400 to-violet-500' },
+  { id: 'stoichiometry', label: '5. Stoikiometri Faraday', time: '4 JP', icon: Calculator, color: 'from-emerald-400 to-green-500' },
+  { id: 'lab_volta', label: '6. Proyek: Sel Volta', time: '8 JP', icon: FlaskConical, color: 'from-rose-400 to-red-500' },
+  { id: 'lab_electro', label: '7. Proyek: Penyepuhan', time: '8 JP', icon: FlaskConical, color: 'from-rose-400 to-red-500' },
+];
+
+// --- KOMPONEN BANTUAN ---
+
+const ChemicalFormula = ({ children }) => {
+  const parts = children.split(/(\d+)|([+-])/g).filter(Boolean);
+  return (
+    <span className="font-serif font-bold text-lg tracking-wide">
+      {parts.map((part, i) => {
+        if (!isNaN(part)) return <sub key={i} className="text-xs">{part}</sub>;
+        if (part === '+' || part === '-') return <sup key={i} className="text-xs">{part}</sup>;
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+};
+
+const SectionHeader = ({ title, time, desc, colorClass = "from-indigo-500 to-purple-600" }) => (
+  <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r shadow-lg text-white relative overflow-hidden transform hover:scale-[1.01] transition-transform duration-300 " style={{ backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))` }}>
+    <div className={`absolute inset-0 bg-gradient-to-r ${colorClass} opacity-100`}></div>
+    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-20 rounded-full blur-xl"></div>
+    <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-black opacity-10 rounded-full blur-xl"></div>
+    
+    <div className="relative z-10">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-3xl font-extrabold tracking-tight">{title}</h2>
+        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md text-white border border-white/30 rounded-full text-sm font-bold shadow-sm">
+          {time}
+        </span>
+      </div>
+      <p className="text-white/90 text-lg font-medium max-w-2xl">{desc}</p>
+    </div>
+  </div>
+);
+
+// --- MODUL 1: KONSEP REDOKS ---
+
+const RedoxConcepts = () => {
+  const [activeTab, setActiveTab] = useState(0);
+  const concepts = [
+    {
+      title: "Pengertian Redoks",
+      theme: "orange",
+      content: "Redoks adalah singkatan dari Reduksi dan Oksidasi. Reaksi ini melibatkan transfer elektron dan perubahan bilangan oksidasi.",
+      points: [
+        "Oksidasi: Pelepasan elektron / Kenaikan Biloks.",
+        "Reduksi: Penerimaan elektron / Penurunan Biloks.",
+        "Oksidator: Mengalami reduksi (penyebab oksidasi lain).",
+        "Reduktor: Mengalami oksidasi (penyebab reduksi lain)."
+      ]
+    },
+    {
+      title: "Aturan Biloks",
+      theme: "blue",
+      content: "Bilangan oksidasi (Biloks) adalah muatan imajiner atom jika elektron ikatan didistribusikan ke atom yang lebih elektronegatif.",
+      points: [
+        "Unsur bebas (O2, Fe, Na) = 0",
+        "Ion monoatomik (Na+) = muatannya (+1)",
+        "Oksigen = -2 (Kecuali peroksida -1)",
+        "Hidrogen = +1 (Kecuali hidrida -1)",
+        "Total biloks senyawa netral = 0"
+      ]
+    }
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <SectionHeader 
+        title="Konsep Redoks" 
+        time="4 JP" 
+        desc="Memahami dasar reaksi transfer elektron dan bilangan oksidasi."
+        colorClass="from-orange-500 to-pink-600"
+      />
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Interactive Card */}
+        <div className="bg-white p-1 rounded-2xl shadow-xl">
+          <div className="bg-slate-50 p-2 rounded-t-xl flex gap-2 border-b border-slate-200">
+            {concepts.map((c, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTab(i)}
+                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+                  activeTab === i 
+                    ? `bg-gradient-to-r ${i === 0 ? 'from-orange-400 to-pink-500' : 'from-blue-400 to-cyan-500'} text-white shadow-md transform -translate-y-1` 
+                    : 'bg-white text-slate-500 hover:bg-slate-100'
+                }`}
+              >
+                {c.title}
+              </button>
+            ))}
+          </div>
+          
+          <div className="p-6">
+            <h3 className={`text-2xl font-black mb-3 ${activeTab === 0 ? 'text-orange-500' : 'text-blue-500'}`}>
+              {concepts[activeTab].title}
+            </h3>
+            <p className="text-slate-600 font-medium mb-6 leading-relaxed">{concepts[activeTab].content}</p>
+            <ul className="space-y-3">
+              {concepts[activeTab].points.map((pt, idx) => (
+                <li key={idx} className={`flex items-start gap-3 p-3 rounded-xl border-l-4 ${activeTab === 0 ? 'bg-orange-50 border-orange-400' : 'bg-blue-50 border-blue-400'}`}>
+                  <CheckCircle className={`w-5 h-5 shrink-0 mt-0.5 ${activeTab === 0 ? 'text-orange-500' : 'text-blue-500'}`} />
+                  <span className="text-slate-700 font-medium">{pt}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Visual Mnemonics */}
+        <div className="grid grid-rows-2 gap-4">
+          <div className="bg-gradient-to-br from-violet-600 to-indigo-700 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+            <h3 className="text-xl font-bold mb-1 opacity-80 uppercase tracking-widest text-xs">Jembatan Keledai 1</h3>
+            <p className="text-4xl font-black mb-2 text-yellow-300">"PBO - PRE"</p>
+            <div className="flex gap-4 text-sm font-medium">
+              <div>
+                <span className="block text-yellow-200 font-bold">PBO</span>
+                Pelepasan = Oksidasi
+              </div>
+              <div className="w-px bg-white/20"></div>
+              <div>
+                <span className="block text-cyan-200 font-bold">PRE</span>
+                Penerimaan = Reduksi
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform">
+             <div className="absolute left-0 bottom-0 w-32 h-32 bg-black/10 rounded-full blur-2xl group-hover:bg-black/20 transition-all"></div>
+             <h3 className="text-xl font-bold mb-1 opacity-80 uppercase tracking-widest text-xs">Jembatan Keledai 2</h3>
+            <p className="text-3xl font-black mb-2 text-white">"Naik Oks, Turun Red"</p>
+            <div className="space-y-1 text-sm font-medium">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">📈</div>
+                <span>Biloks Naik = Oksidasi (Oksidator)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">📉</div>
+                <span>Biloks Turun = Reduksi (Reduktor)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MODUL 2: PENYETARAAN REAKSI ---
+
+const Balancing = () => {
+  const [step, setStep] = useState(0);
+  const [mode, setMode] = useState('acid'); 
+
+  // Data langkah yang sudah diperbaiki agar lengkap dan akurat
+  const steps = [
+    { 
+      title: "1. Pisahkan", 
+      desc: "Pisahkan reaksi menjadi dua setengah reaksi (Oksidasi | Reduksi).", 
+      acid: "Cr₂O₇²⁻ → Cr³⁺   |   SO₂ → HSO₄⁻", 
+      base: "MnO₄⁻ → MnO₂   |   I⁻ → I₂" 
+    },
+    { 
+      title: "2. Atom Pusat", 
+      desc: "Setarakan jumlah atom utama (selain Oksigen dan Hidrogen).", 
+      acid: "Cr₂O₇²⁻ → 2Cr³⁺   |   SO₂ → HSO₄⁻", 
+      base: "MnO₄⁻ → MnO₂   |   2I⁻ → I₂" 
+    },
+    { 
+      title: "3. Oksigen", 
+      desc: mode === 'acid' ? "Tambahkan H₂O di ruas yang kekurangan Oksigen." : "Tambahkan H₂O di ruas yang berlebihan Oksigen.", 
+      acid: "Cr₂O₇²⁻ → 2Cr³⁺ + 7H₂O   |   SO₂ + 2H₂O → HSO₄⁻", 
+      base: "MnO₄⁻ → MnO₂ + 2H₂O   |   2I⁻ → I₂" 
+    },
+    { 
+      title: "4. Hidrogen", 
+      desc: mode === 'acid' ? "Tambahkan H⁺ di ruas yang kekurangan Hidrogen." : "Tambahkan OH⁻ di ruas yang kekurangan Hidrogen.", 
+      acid: "Cr₂O₇²⁻ + 14H⁺ → 2Cr³⁺ + 7H₂O   |   SO₂ + 2H₂O → HSO₄⁻ + 3H⁺", 
+      base: "MnO₄⁻ + 4H⁺ → MnO₂ + 2H₂O   |   2I⁻ → I₂" 
+    },
+    { 
+      title: "5. Muatan (e⁻)", 
+      desc: "Tambahkan elektron (e⁻) untuk menyamakan muatan kiri dan kanan.", 
+      acid: "Cr₂O₇²⁻ + 14H⁺ + 6e⁻ → 2Cr³⁺ + 7H₂O   |   SO₂ + 2H₂O → HSO₄⁻ + 3H⁺ + 2e⁻", 
+      base: "MnO₄⁻ + 4H⁺ + 3e⁻ → MnO₂ + 2H₂O   |   2I⁻ → I₂ + 2e⁻" 
+    },
+    { 
+      title: "6. Gabungkan", 
+      desc: "Samakan jumlah e⁻ (kali silang), coret spesi sama, dan jumlahkan.", 
+      acid: "Cr₂O₇²⁻ + 3SO₂ + 2H⁺ → 2Cr³⁺ + 3HSO₄⁻ + H₂O", 
+      base: "2MnO₄⁻ + 6I⁻ + 8H⁺ → 2MnO₂ + 3I₂ + 4H₂O" 
+    }
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <SectionHeader title="Penyetaraan Redoks" time="6 JP" desc="Metode Ion-Elektron (Setengah Reaksi)" colorClass="from-blue-500 to-cyan-600" />
+      
+      <div className="bg-white p-8 rounded-3xl shadow-xl border-2 border-slate-100">
+        {/* Toggle Switch */}
+        <div className="flex justify-center mb-10">
+          <div className="bg-slate-100 p-1.5 rounded-2xl flex gap-2 shadow-inner">
+            <button onClick={() => setMode('acid')} className={`px-8 py-3 rounded-xl font-bold transition-all duration-300 ${mode === 'acid' ? 'bg-red-500 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-700'}`}>
+              Suasana ASAM (H⁺)
+            </button>
+            <button onClick={() => setMode('base')} className={`px-8 py-3 rounded-xl font-bold transition-all duration-300 ${mode === 'base' ? 'bg-indigo-500 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-slate-700'}`}>
+              Suasana BASA (OH⁻)
+            </button>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Steps Navigation */}
+          <div className="space-y-4">
+             {steps.map((s, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => setStep(i)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 group ${
+                    i === step 
+                      ? mode === 'acid' ? 'border-red-500 bg-red-50' : 'border-indigo-500 bg-indigo-50'
+                      : 'border-transparent hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-sm transition-colors ${
+                      i === step 
+                        ? mode === 'acid' ? 'bg-red-500 text-white' : 'bg-indigo-500 text-white'
+                        : i < step ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'
+                    }`}>
+                      {i < step ? <CheckCircle className="w-6 h-6" /> : i + 1}
+                    </div>
+                    <div>
+                      <h4 className={`font-bold ${i === step ? 'text-slate-900' : 'text-slate-500'}`}>{s.title}</h4>
+                      <p className="text-xs text-slate-400 font-medium">{s.desc}</p>
+                    </div>
+                  </div>
+                </div>
+             ))}
+          </div>
+
+          {/* Dynamic Display Board - Updated for Single Line */}
+          <div className="relative">
+            <div className={`sticky top-6 p-6 rounded-3xl text-white shadow-2xl min-h-[300px] flex flex-col justify-between ${mode === 'acid' ? 'bg-gradient-to-br from-red-500 to-orange-600' : 'bg-gradient-to-br from-indigo-500 to-purple-600'}`}>
+                <div className="w-full overflow-hidden">
+                   <h3 className="text-white/60 text-sm font-bold tracking-widest uppercase mb-4">Visualisasi Reaksi</h3>
+                   {/* CSS Updated: whitespace-nowrap and overflow-x-auto forces single line with scroll if needed */}
+                   <div className="text-xl md:text-2xl font-black font-mono leading-relaxed whitespace-nowrap overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+                      {mode === 'acid' ? steps[step].acid : steps[step].base}
+                   </div>
+                </div>
+                
+                <div className="flex justify-between items-end mt-8">
+                   <button onClick={() => setStep(0)} className="text-white/70 hover:text-white text-sm font-bold underline">
+                      Ulangi dari Awal
+                   </button>
+                   {step < steps.length - 1 && (
+                      <button onClick={() => setStep(step + 1)} className="bg-white text-slate-900 px-6 py-3 rounded-full font-bold hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 shadow-lg">
+                        Lanjut <ArrowRight className="w-5 h-5" />
+                      </button>
+                   )}
+                </div>
+            </div>
+            
+            <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl">
+               <h5 className="font-bold text-yellow-800 text-sm mb-1">Tips Guru:</h5>
+               <p className="text-yellow-700 text-xs">Tekankan pada siswa bahwa jumlah atom DAN muatan harus setara di kedua sisi. Reaksi dapat digeser jika terlalu panjang.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MODUL 3: SEL VOLTA (SIMULATOR) ---
+
+const VoltaicCell = () => {
+  const [anode, setAnode] = useState('Zn');
+  const [cathode, setCathode] = useState('Cu');
+  
+  const potential = (STANDARD_POTENTIALS[cathode] - STANDARD_POTENTIALS[anode]).toFixed(2);
+  const isSpontaneous = parseFloat(potential) > 0;
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <SectionHeader title="Simulator Sel Volta" time="6 JP" desc="Eksperimen virtual pembangkit listrik dari reaksi kimia spontan." colorClass="from-yellow-400 to-orange-500" />
+
+      <div className="grid lg:grid-cols-12 gap-6">
+        {/* Controls - 4 Columns */}
+        <div className="lg:col-span-4 space-y-4">
+           <div className="bg-white p-6 rounded-2xl shadow-xl border-2 border-slate-100">
+             <h3 className="font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                <span className="bg-yellow-100 p-2 rounded-lg text-yellow-600"><Zap className="w-5 h-5" /></span>
+                Konfigurasi Elektroda
+             </h3>
+             
+             <div className="space-y-6">
+               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Anoda (Oksidasi) -</label>
+                 <select value={anode} onChange={(e) => setAnode(e.target.value)} className="w-full bg-white p-3 border-2 border-slate-200 rounded-lg font-bold text-slate-700 focus:border-yellow-400 outline-none transition-colors">
+                   {Object.keys(STANDARD_POTENTIALS).map(m => <option key={m} value={m}>{m} (E° = {STANDARD_POTENTIALS[m]} V)</option>)}
+                 </select>
+               </div>
+
+               <div className="flex justify-center -my-3 relative z-10">
+                  <div className="bg-white border-2 border-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-400">Jembatan Garam</div>
+               </div>
+
+               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Katoda (Reduksi) +</label>
+                 <select value={cathode} onChange={(e) => setCathode(e.target.value)} className="w-full bg-white p-3 border-2 border-slate-200 rounded-lg font-bold text-slate-700 focus:border-yellow-400 outline-none transition-colors">
+                   {Object.keys(STANDARD_POTENTIALS).map(m => <option key={m} value={m}>{m} (E° = {STANDARD_POTENTIALS[m]} V)</option>)}
+                 </select>
+               </div>
+             </div>
+           </div>
+
+           <div className={`p-6 rounded-2xl text-white shadow-lg transition-colors duration-500 flex flex-col items-center justify-center ${isSpontaneous ? 'bg-gradient-to-br from-green-400 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-rose-600'}`}>
+              <div className="text-sm font-medium opacity-90 mb-1">Potensial Sel (Voltmeter)</div>
+              <div className="text-5xl font-black tracking-tighter mb-2">
+                {potential > 0 ? '+' : ''}{potential} V
+              </div>
+              <div className="bg-white/20 px-4 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
+                 {isSpontaneous ? "LAMPU MENYALA (Spontan)" : "TIDAK MENYALA (Non-Spontan)"}
+              </div>
+           </div>
+        </div>
+
+        {/* Visualizer - 8 Columns */}
+        <div className="lg:col-span-8">
+          <div className="bg-slate-800 rounded-3xl p-1 shadow-2xl overflow-hidden h-full relative border-4 border-slate-800">
+             <div className="absolute inset-0 bg-grid-slate-700/[0.2] bg-[length:20px_20px]"></div>
+             
+             <div className="relative h-full flex flex-col items-center justify-center min-h-[400px]">
+                {/* SVG Visualization */}
+                <svg viewBox="0 0 450 300" className="w-full h-full max-h-[450px]">
+                   {/* Background Glows for beakers */}
+                   <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="5" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                   </filter>
+
+                   {/* Wire */}
+                   <path d="M 120 120 V 50 H 330 V 120" fill="none" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" />
+                   
+                   {/* Voltmeter */}
+                   <circle cx="225" cy="50" r="28" fill="#1E293B" stroke="#F59E0B" strokeWidth="3" />
+                   <text x="225" y="55" textAnchor="middle" fill="#F59E0B" fontSize="14" fontWeight="bold" fontFamily="monospace">{potential}V</text>
+
+                   {/* Flowing Electrons */}
+                   {isSpontaneous && (
+                     <>
+                        <circle r="6" fill="#FFF" filter="url(#glow)">
+                           <animateMotion dur="2s" repeatCount="indefinite" path="M 120 120 V 50 H 330 V 120" keyPoints="0;1" keyTimes="0;1" calcMode="linear" />
+                        </circle>
+                        <text x="225" y="30" textAnchor="middle" fill="#FFF" fontSize="10" opacity="0.8">e⁻ →</text>
+                     </>
+                   )}
+
+                   {/* Left Beaker (Anode) */}
+                   <g transform="translate(70, 130)">
+                      <rect x="0" y="0" width="100" height="140" rx="10" fill="rgba(255,255,255,0.05)" stroke="white" strokeWidth="2" />
+                      <rect x="5" y="20" width="90" height="115" rx="5" fill="#3B82F6" opacity="0.4" />
+                      {/* Electrode */}
+                      <rect x="35" y="-30" width="30" height="130" fill="#94A3B8" stroke="#475569" strokeWidth="1" />
+                      <text x="50" y="80" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" opacity="0.8">{anode}</text>
+                      <text x="50" y="160" textAnchor="middle" fill="#FCA5A5" fontSize="12" fontWeight="bold">ANODA (-)</text>
+                      {/* Ions */}
+                      <circle cx="20" cy="50" r="4" fill="white" opacity="0.5"><animate attributeName="cy" values="50;40;60;50" dur="4s" repeatCount="indefinite"/></circle>
+                   </g>
+
+                   {/* Salt Bridge */}
+                   <path d="M 160 140 V 130 A 15 15 0 0 1 290 130 V 140" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="12" strokeLinecap="round" />
+                   <text x="225" y="125" textAnchor="middle" fill="#000" fontSize="10" fontWeight="bold">KCL</text>
+
+                   {/* Right Beaker (Cathode) */}
+                   <g transform="translate(280, 130)">
+                      <rect x="0" y="0" width="100" height="140" rx="10" fill="rgba(255,255,255,0.05)" stroke="white" strokeWidth="2" />
+                      <rect x="5" y="20" width="90" height="115" rx="5" fill="#EF4444" opacity="0.4" />
+                      {/* Electrode */}
+                      <rect x="35" y="-30" width="30" height="130" fill="#D97706" stroke="#B45309" strokeWidth="1" />
+                      <text x="50" y="80" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" opacity="0.8">{cathode}</text>
+                      <text x="50" y="160" textAnchor="middle" fill="#6EE7B7" fontSize="12" fontWeight="bold">KATODA (+)</text>
+                      {/* Ions */}
+                      <circle cx="80" cy="80" r="4" fill="white" opacity="0.5"><animate attributeName="cy" values="80;90;70;80" dur="3s" repeatCount="indefinite"/></circle>
+                   </g>
+                </svg>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MODUL 4: SEL ELEKTROLISIS ---
+
+const Electrolysis = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionHeader title="Sel Elektrolisis" time="6 JP" desc="Reaksi kimia Non-Spontan dengan bantuan energi listrik." colorClass="from-purple-500 to-indigo-600" />
+    
+    <div className="grid md:grid-cols-2 gap-8">
+      <div className="space-y-6">
+         {/* Theory Card */}
+         <div className="bg-white p-8 rounded-3xl shadow-xl border-l-8 border-purple-500">
+            <h3 className="text-2xl font-black text-slate-800 mb-4">Prinsip Kerja</h3>
+            <div className="flex gap-4 mb-6">
+                <div className="flex-1 bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                   <div className="text-red-500 font-black text-xl mb-1">+</div>
+                   <div className="text-slate-600 font-bold text-sm">ANODA</div>
+                   <div className="text-xs text-slate-400">Oksidasi</div>
+                </div>
+                <div className="flex-1 bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                   <div className="text-blue-500 font-black text-xl mb-1">-</div>
+                   <div className="text-slate-600 font-bold text-sm">KATODA</div>
+                   <div className="text-xs text-slate-400">Reduksi</div>
+                </div>
+            </div>
+            
+            <h4 className="font-bold text-purple-700 mb-2">Jembatan Keledai "KNAP"</h4>
+            <p className="text-slate-600 mb-6 bg-purple-50 p-3 rounded-lg border border-purple-100">
+               <strong className="text-purple-600">K</strong>atoda = <strong className="text-purple-600">N</strong>egatif<br/>
+               <strong className="text-red-500">A</strong>noda = <strong className="text-red-500">P</strong>ositif
+            </p>
+
+            <h4 className="font-bold text-slate-800 mb-2">Reaksi di Katoda (Penting!):</h4>
+            <ul className="space-y-2">
+               <li className="flex items-start gap-3 text-sm text-slate-600">
+                  <span className="bg-slate-200 text-slate-600 font-bold rounded px-2 text-xs py-1 mt-0.5">1</span>
+                  Jika kation Logam Aktif (IA, IIA, Al, Mn) → Air yang direduksi (H₂O + e⁻ → H₂ + OH⁻).
+               </li>
+               <li className="flex items-start gap-3 text-sm text-slate-600">
+                  <span className="bg-slate-200 text-slate-600 font-bold rounded px-2 text-xs py-1 mt-0.5">2</span>
+                  Jika kation lain (Cu, Ag, Au) → Logam mengendap.
+               </li>
+            </ul>
+         </div>
+      </div>
+
+      <div className="bg-gradient-to-b from-slate-900 to-indigo-900 rounded-3xl p-8 flex flex-col items-center justify-center text-white shadow-2xl relative overflow-hidden ring-4 ring-purple-500/20">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <h3 className="mb-6 font-bold text-xl text-center z-10 bg-white/10 px-6 py-2 rounded-full backdrop-blur-sm border border-white/20">
+          Visualisasi: Larutan NaCl
+        </h3>
+        
+        <div className="relative w-64 h-72 border-4 border-white/20 rounded-b-3xl overflow-hidden bg-cyan-500/20 backdrop-blur-sm z-10">
+           {/* Liquid Gradient */}
+           <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/30 to-blue-600/40"></div>
+
+           {/* Electrodes */}
+           <div className="absolute top-0 left-12 w-6 h-56 bg-gradient-to-r from-gray-300 to-gray-500 rounded-b-lg shadow-lg"></div> 
+           <div className="absolute top-0 right-12 w-6 h-56 bg-gradient-to-r from-gray-300 to-gray-500 rounded-b-lg shadow-lg"></div> 
+
+           {/* Gas Bubbles Anode (Cl2 - Greenish) */}
+           <div className="absolute top-24 left-10 flex flex-col items-center gap-2">
+              <div className="w-3 h-3 bg-green-300 rounded-full animate-bounce opacity-80 shadow-[0_0_10px_rgba(134,239,172,0.8)]"></div>
+              <div className="w-4 h-4 bg-green-300 rounded-full animate-bounce delay-100 opacity-80"></div>
+              <span className="text-green-300 font-bold text-xs shadow-black drop-shadow-md mt-2">Cl₂ (g)</span>
+           </div>
+
+           {/* Gas Bubbles Cathode (H2 - White) */}
+           <div className="absolute top-32 right-10 flex flex-col items-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce opacity-90 shadow-[0_0_10px_white]"></div>
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce delay-75 opacity-90"></div>
+              <span className="text-white font-bold text-xs shadow-black drop-shadow-md mt-2">H₂ (g)</span>
+           </div>
+           
+           <div className="absolute bottom-4 w-full text-center font-bold text-white/50 text-sm tracking-widest">NaCl (aq)</div>
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-4 w-full z-10">
+           <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-2 border-red-300">+</div>
+              <span className="text-xs font-bold mt-2 text-red-300 uppercase">Anoda</span>
+           </div>
+           
+           <div className="h-2 flex-1 bg-gray-700 rounded-full relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500 opacity-50 blur-sm"></div>
+           </div>
+
+           <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center font-black text-2xl shadow-lg border-2 border-blue-300">-</div>
+              <span className="text-xs font-bold mt-2 text-blue-300 uppercase">Katoda</span>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// --- MODUL 5: STOIKIOMETRI (FARADAY) ---
+
+const Stoichiometry = () => {
+  const [inputs, setInputs] = useState({ e: 31.75, i: 5, t: 60 }); 
+  const result = ((inputs.e * inputs.i * inputs.t) / 96500).toFixed(3);
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <SectionHeader title="Hukum Faraday" time="4 JP" desc="Kalkulator massa endapan reaksi elektrolisis." colorClass="from-emerald-500 to-teal-600" />
+
+      <div className="grid lg:grid-cols-2 gap-8">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-8 rounded-3xl shadow-2xl flex flex-col justify-center relative overflow-hidden">
+             <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+             <h3 className="text-3xl font-black mb-4">Hukum Faraday I</h3>
+             <div className="bg-black/20 p-6 rounded-2xl backdrop-blur-md border border-white/10 mb-6">
+                <p className="text-4xl font-mono text-center font-bold tracking-wider">w = <span className="text-yellow-300">e</span>·<span className="text-yellow-300">i</span>·<span className="text-yellow-300">t</span> / 96500</p>
+             </div>
+             <div className="grid grid-cols-2 gap-4 text-sm font-medium opacity-90">
+                <div className="bg-white/10 p-3 rounded-lg">w : Massa endapan (gram)</div>
+                <div className="bg-white/10 p-3 rounded-lg">e : Massa ekuivalen (Ar/Val)</div>
+                <div className="bg-white/10 p-3 rounded-lg">i : Kuat Arus (Ampere)</div>
+                <div className="bg-white/10 p-3 rounded-lg">t : Waktu (detik)</div>
+             </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl relative">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Calculator className="w-24 h-24 text-emerald-600" />
+            </div>
+            
+            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><Calculator className="w-5 h-5"/></span>
+                Input Data
+            </h3>
+            
+            <div className="space-y-5">
+                <div>
+                    <label className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-1 block">Massa Ekuivalen (e)</label>
+                    <div className="flex items-center">
+                        <input type="number" value={inputs.e} onChange={e => setInputs({...inputs, e: e.target.value})} className="w-full text-lg font-bold border-b-2 border-slate-200 focus:border-emerald-500 outline-none py-2 bg-transparent transition-colors" />
+                        <span className="text-slate-400 font-medium ml-2">Ar/n</span>
+                    </div>
+                    <p className="text-xs text-emerald-600 mt-1 font-medium bg-emerald-50 inline-block px-2 py-1 rounded">Contoh: Cu (Ar 63.5 / 2) = 31.75</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-1 block">Arus (i)</label>
+                        <div className="flex items-center">
+                            <input type="number" value={inputs.i} onChange={e => setInputs({...inputs, i: e.target.value})} className="w-full text-lg font-bold border-b-2 border-slate-200 focus:border-emerald-500 outline-none py-2 bg-transparent transition-colors" />
+                            <span className="text-slate-400 font-medium ml-2">A</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-1 block">Waktu (t)</label>
+                        <div className="flex items-center">
+                            <input type="number" value={inputs.t} onChange={e => setInputs({...inputs, t: e.target.value})} className="w-full text-lg font-bold border-b-2 border-slate-200 focus:border-emerald-500 outline-none py-2 bg-transparent transition-colors" />
+                            <span className="text-slate-400 font-medium ml-2">s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 bg-slate-900 text-white p-6 rounded-2xl flex items-center justify-between shadow-lg transform hover:scale-[1.02] transition-transform">
+                    <span className="font-medium text-emerald-400">Hasil (w):</span>
+                    <span className="text-4xl font-black tracking-tight">{result} <span className="text-lg font-normal text-slate-400">gram</span></span>
+                </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MODUL 6 & 7: LAB VIRTUAL / PANDUAN ---
+
+const LabGuide = ({ type }) => {
+  const isVolta = type === 'volta';
+  const title = isVolta ? "Proyek: Baterai Buah" : "Proyek: Electroplating";
+  const desc = isVolta ? "Membuat sumber listrik alternatif menggunakan bahan sehari-hari." : "Aplikasi elektrolisis untuk melapisi logam besi dengan tembaga.";
+  const themeColor = isVolta ? "orange" : "rose";
+  
+  const [report, setReport] = useState({ observasi: "", kesimpulan: "" });
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <SectionHeader 
+        title={title} 
+        time="8 JP" 
+        desc={desc} 
+        colorClass={isVolta ? "from-orange-500 to-red-500" : "from-rose-500 to-pink-600"}
+      />
+
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+            {/* Tools Card */}
+            <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-2 h-full ${isVolta ? 'bg-orange-500' : 'bg-rose-500'}`}></div>
+                <h3 className={`font-black text-2xl mb-6 flex items-center gap-3 ${isVolta ? 'text-orange-600' : 'text-rose-600'}`}>
+                    <div className={`p-2 rounded-lg text-white ${isVolta ? 'bg-orange-500' : 'bg-rose-500'}`}><FlaskConical className="w-6 h-6"/></div>
+                    Alat & Bahan
+                </h3>
+                
+                <div className="grid sm:grid-cols-2 gap-4">
+                    {isVolta ? (
+                        <>
+                            {["4 Jeruk Nipis / Kentang", "4 Koin Tembaga (Kabel)", "4 Paku Besi (Seng)", "5 Kabel Penjepit Buaya", "1 Lampu LED", "Amplas Halus"].map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-orange-50 p-3 rounded-xl">
+                                    <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                                    <span className="font-medium text-slate-700">{item}</span>
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                         <>
+                            {["Gelas Beker / Toples Kaca", "Baterai 9V + Soket", "Larutan CuSO4 (Terusi)", "Lempeng Tembaga", "Paku / Kunci Besi", "Amplas"].map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-rose-50 p-3 rounded-xl">
+                                    <div className="w-2 h-2 rounded-full bg-rose-400"></div>
+                                    <span className="font-medium text-slate-700">{item}</span>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Steps Card */}
+            <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
+                <h3 className={`font-black text-2xl mb-6 ${isVolta ? 'text-orange-600' : 'text-rose-600'}`}>Prosedur Kerja</h3>
+                <div className="space-y-6">
+                    {isVolta ? (
+                        [
+                            "Tusukkan koin (Kutub +) dan paku (Kutub -) ke dalam setiap buah. Jangan sampai bersentuhan di dalam buah.",
+                            "Hubungkan Paku buah 1 ke Koin buah 2 menggunakan kabel buaya (Rangkaian Seri).",
+                            "Ulangi hingga buah ke-4. Sisakan 1 Koin bebas dan 1 Paku bebas di ujung rangkaian.",
+                            "Hubungkan ujung bebas tersebut ke kaki lampu LED. (Kaki panjang LED ke Koin, pendek ke Paku).",
+                            "Amati nyala lampu. Jika tidak menyala, cek sambungan atau tambah jumlah buah."
+                        ].map((step, i) => (
+                             <div key={i} className="flex gap-4">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 font-bold flex items-center justify-center border-2 border-orange-200">{i+1}</div>
+                                    {i < 4 && <div className="w-0.5 h-full bg-orange-100 my-1"></div>}
+                                </div>
+                                <p className="text-slate-600 font-medium pt-1">{step}</p>
+                             </div>
+                        ))
+                    ) : (
+                        [
+                             "Amplas kunci/paku besi hingga bersih dan mengkilap.",
+                             "Larutkan 2 sendok makan serbuk CuSO4 ke dalam air hangat, aduk hingga larut.",
+                             "Hubungkan Tembaga ke kutub Positif (+) baterai.",
+                             "Hubungkan Besi ke kutub Negatif (-) baterai.",
+                             "Celupkan keduanya ke larutan. Pastikan tidak bersentuhan satu sama lain.",
+                             "Tunggu 5-10 menit dan amati perubahan pada besi."
+                        ].map((step, i) => (
+                             <div key={i} className="flex gap-4">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center border-2 border-rose-200">{i+1}</div>
+                                    {i < 5 && <div className="w-0.5 h-full bg-rose-100 my-1"></div>}
+                                </div>
+                                <p className="text-slate-600 font-medium pt-1">{step}</p>
+                             </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+
+        {/* Digital Report */}
+        <div className="lg:col-span-1">
+            <div className="bg-slate-800 text-white p-6 rounded-3xl h-full shadow-2xl flex flex-col border border-slate-700">
+                <h3 className="font-bold text-xl mb-6 flex items-center gap-2 border-b border-slate-600 pb-4">
+                    <ClipboardList className="w-6 h-6 text-emerald-400" /> 
+                    Laporan Siswa
+                </h3>
+                <div className="space-y-6 flex-1">
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Hasil Pengamatan</label>
+                        <textarea 
+                            className="w-full p-4 bg-slate-700/50 border border-slate-600 rounded-xl text-sm focus:border-emerald-400 outline-none transition-colors text-slate-200" 
+                            rows="6"
+                            placeholder="Catat perubahan warna, gelembung gas, atau nyala lampu..."
+                            value={report.observasi}
+                            onChange={(e) => setReport({...report, observasi: e.target.value})}
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Analisis & Kesimpulan</label>
+                        <textarea 
+                            className="w-full p-4 bg-slate-700/50 border border-slate-600 rounded-xl text-sm focus:border-emerald-400 outline-none transition-colors text-slate-200" 
+                            rows="6"
+                            placeholder="Mengapa hal tersebut terjadi? Jelaskan reaksi redoksnya..."
+                            value={report.kesimpulan}
+                            onChange={(e) => setReport({...report, kesimpulan: e.target.value})}
+                        ></textarea>
+                    </div>
+                </div>
+                <button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all mt-6 active:scale-95">
+                    Simpan Laporan (.PDF)
+                </button>
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN APP ---
+
+export default function App() {
+  const [activeModule, setActiveModule] = useState('redox');
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  const renderContent = () => {
+    switch (activeModule) {
+      case 'redox': return <RedoxConcepts />;
+      case 'balancing': return <Balancing />;
+      case 'voltaic': return <VoltaicCell />;
+      case 'electrolysis': return <Electrolysis />;
+      case 'stoichiometry': return <Stoichiometry />;
+      case 'lab_volta': return <LabGuide type="volta" />;
+      case 'lab_electro': return <LabGuide type="electro" />;
+      default: return <RedoxConcepts />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex overflow-hidden">
+      {/* Sidebar with Dark Gradient Theme */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-80 bg-slate-900 text-white transform transition-transform duration-300 ease-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 flex flex-col shadow-2xl`}>
+        {/* Sidebar Header */}
+        <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+               <Atom className="text-white w-6 h-6 animate-spin-slow" />
+            </div>
+            <div>
+              <h1 className="font-black text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">RedoxMaster</h1>
+              <p className="text-xs text-slate-500 font-medium tracking-widest uppercase">Pro Edition</p>
+            </div>
+          </div>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-slate-700">
+          <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Kurikulum</div>
+          {MENU_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => { setActiveModule(item.id); if(window.innerWidth < 768) setSidebarOpen(false); }}
+              className={`w-full group relative flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-300 overflow-hidden ${
+                activeModule === item.id 
+                  ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10' 
+                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+              }`}
+            >
+              {/* Active Indicator Line */}
+              {activeModule === item.id && (
+                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${item.color}`}></div>
+              )}
+              
+              <div className={`p-2 rounded-lg transition-colors ${activeModule === item.id ? 'bg-slate-950' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
+                <item.icon className={`w-5 h-5 ${activeModule === item.id ? 'text-white' : 'text-slate-400'}`} />
+              </div>
+              
+              <div className="flex flex-col items-start z-10">
+                <span className={`font-bold ${activeModule === item.id ? 'text-white' : 'text-slate-300'}`}>{item.label}</span>
+                <span className="text-xs opacity-60 font-medium">{item.time}</span>
+              </div>
+
+              {/* Background Glow on Active */}
+              {activeModule === item.id && (
+                 <div className={`absolute right-0 top-0 w-24 h-full bg-gradient-to-l ${item.color} opacity-10 blur-xl`}></div>
+              )}
+            </button>
+          ))}
+        </nav>
+        
+        {/* Footer User Profile (Cosmetic) */}
+        <div className="p-6 bg-slate-950 border-t border-slate-800">
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-orange-400 border-2 border-slate-800"></div>
+              <div>
+                 <div className="text-sm font-bold text-white">Guru Kimia</div>
+                 <div className="text-xs text-slate-500">Mode Pengajar</div>
+              </div>
+           </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto relative h-screen bg-slate-100 scroll-smooth">
+        {/* Mobile Header */}
+        <header className="bg-slate-900 text-white p-4 sticky top-0 z-40 flex items-center justify-between md:hidden shadow-md">
+          <button onClick={() => setSidebarOpen(true)} className="text-slate-300">
+            <Menu className="w-6 h-6" />
+          </button>
+          <span className="font-bold text-lg">RedoxMaster</span>
+          <div className="w-6"></div>
+        </header>
+
+        <div className="p-6 max-w-6xl mx-auto pb-20">
+          {renderContent()}
+        </div>
+      </main>
+    </div>
+  );
+}
